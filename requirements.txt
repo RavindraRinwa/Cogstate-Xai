@@ -1,0 +1,9 @@
+numpy
+scipy
+scikit-learn
+matplotlib
+torch
+captum
+opencv-python
+mediapipe==0.10.14   # face landmarks (needed for DEAP videos + live webcam)
+pylsl                # optional: live EEG headset streaming via Lab Streaming Layer
