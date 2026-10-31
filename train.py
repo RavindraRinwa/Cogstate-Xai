@@ -51,7 +51,7 @@ def main():
     torch.manual_seed(a.seed); np.random.seed(a.seed)
     dev = "cuda" if torch.cuda.is_available() else "cpu"
 
-    D = load_dataset(a.source, use_face=not a.no_face)
+    D = load_dataset(a.source, use_face=True)
     E, F, y = torch.tensor(D["eeg"]), torch.tensor(D["face"]), torch.tensor(D["y"])
     subs = np.unique(D["subj"])
     print(f"{len(y)} windows | {len(subs)} subjects | class counts {np.bincount(D['y'], minlength=4)}")

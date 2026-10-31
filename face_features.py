@@ -2,6 +2,8 @@
 Per frame (10): eye-aspect-ratio L/R, mouth-aspect-ratio, brow raise L/R, brow furrow,
 smile (lip-corner lift), mouth width, head yaw, head pitch.
 Per 3 s window (21): mean + std of each + blink count."""
+import hashlib
+from pathlib import Path
 import numpy as np
 from config import *
 
@@ -64,7 +66,7 @@ def aggregate_window(F, min_valid=0.3):
 
 # ---------------- offline: DEAP face videos ----------------
 def find_video(subject, trial):
-    hits = list(FACE_DIR.rglob(f"s{subject:02d}_trial{trial:02d}.avi"))
+    hits = list(FACE_DIR.rglob(f"s{subject:02d}_trial{trial:02d}.*"))   # .avi / .mp4 / ...
     return hits[0] if hits else None
 
 
@@ -87,9 +89,15 @@ def video_frame_features(path):
     return np.array(ts), np.array(fs)
 
 
-def trial_face_windows(path, n_win):
-    """Face window features aligned to the EEG windows of one trial -> (n_win, N_FACE), NaN if missing."""
-    cache = CACHE_DIR / "face" / (path.stem + ".npz")
+def cache_path(path):
+    h = hashlib.md5(str(Path(path).resolve()).encode()).hexdigest()[:10]
+    return CACHE_DIR / "face" / f"{Path(path).stem}_{h}.npz"
+
+
+def trial_face_windows(path, n_win, offset=None):
+    """Face features aligned to the EEG windows of one trial -> (n_win, N_FACE), NaN if missing.
+    offset = seconds of video to skip (None -> DEAP heuristic)."""
+    cache = cache_path(path)
     cache.parent.mkdir(exist_ok=True)
     if cache.exists():
         z = np.load(cache); t, F = z["t"], z["F"]
@@ -97,7 +105,8 @@ def trial_face_windows(path, n_win):
         t, F = video_frame_features(path)
         np.savez_compressed(cache, t=t, F=F)
     # Heuristic: if the video is ~63 s it still contains the 3 s baseline -> skip it. VERIFY on your copy.
-    offset = BASELINE_SEC if len(t) and t[-1] > 61.5 else 0.0
+    if offset is None:
+        offset = BASELINE_SEC if len(t) and t[-1] > 61.5 else 0.0
     out = np.full((n_win, N_FACE), np.nan, np.float32)
     for i in range(n_win):
         a = offset + i * STEP_SEC

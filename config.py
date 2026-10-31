@@ -1,7 +1,9 @@
 from pathlib import Path
 
+USE_CHANNELS = ["Fp1"]
 ROOT = Path(__file__).resolve().parent
-DEAP_DIR = ROOT / "data" / "DEAP" / "data_preprocessed_python"   # s01.dat ... s32.dat
+DEAP_DIR = ROOT / "data" / "DEAP" / "deap-dataset" / "data_preprocessed_python"
+# DEAP_DIR = ROOT / "data" / "DEAP" / "data_preprocessed_python"   # s01.dat ... s32.dat
 FACE_DIR = ROOT / "data" / "DEAP" / "face_video"                 # s01_trial01.avi ... (s01-s22 only)
 CACHE_DIR = ROOT / "cache"
 RUN_DIR = ROOT / "runs"
